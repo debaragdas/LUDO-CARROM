@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DEBAWAVES Games - Ludo & Carrom</title>
-    <meta name="description" content="Free-to-play Ludo and Carrom games by DEBAWAVES. Enjoy local multiplayer fun with friends!">
-    <meta name="keywords" content="DEBAWAVES, games, ludo, carrom, free games, multiplayer, fun, virtual coins">
+    <title>LUDO & Carrom - DEBAWAVES Games</title>
+    <meta name="description" content="Play Ludo and Carrom with virtual coins. Professional design for local multiplayer fun by DEBAWAVES.">
+    <meta name="keywords" content="Ludo, Carrom, games, DEBAWAVES, free games, multiplayer, virtual coins, board games">
     <meta name="author" content="DEBARAG DAS / DEBAWAVES">
 
     <!-- Tailwind CSS CDN -->
@@ -14,7 +14,7 @@
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
-            background: radial-gradient(circle at center, #e0f2fe, #bfdbfe, #93c5fd, #60a5fa); /* Soft blues */
+            background: radial-gradient(circle at center, #f0f9ff, #dbeafe, #bfdbfe, #93c5fd, #60a5fa); /* Soft blues */
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -26,21 +26,21 @@
         h1, h2 {
             font-family: 'Playfair Display', serif;
         }
-        .btn-game {
+        .btn-primary {
             background-image: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
             transition: all 0.3s ease-in-out;
             background-size: 200% auto;
         }
-        .btn-game:hover {
+        .btn-primary:hover {
             background-position: right center;
             transform: translateY(-3px);
             box-shadow: 0 8px 15px rgba(0,0,0,0.2);
         }
         .game-container {
             background-color: #ffffff;
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-            padding: 2rem;
+            border-radius: 1.5rem; /* More rounded */
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2); /* Deeper shadow */
+            padding: 2.5rem; /* More padding */
             width: 100%;
             max-width: 900px;
             min-height: 70vh;
@@ -48,71 +48,149 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            position: relative; /* For absolute positioning of screens */
+        }
+        .game-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+        }
+        .game-screen.active {
+            opacity: 1;
+            visibility: visible;
+            position: static; /* Take up space when active */
         }
 
-        /* Specific Game Styles (Simplified for Canvas) */
+        /* Canvas Specific Styles */
         canvas {
-            border: 2px solid #333;
+            border: 4px solid #333; /* Thicker border */
             background-color: #eee;
             touch-action: none; /* Disable default touch actions for canvas interaction */
+            border-radius: 0.5rem; /* Slightly rounded corners for canvas */
         }
 
         /* Ludo specific styles */
         #ludo-board {
-            background-color: #f0f0f0;
-            border: 2px solid #333;
+            background-color: #f8f8f8; /* Lighter background */
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1); /* Inner shadow */
         }
 
         /* Carrom specific styles */
         #carrom-board {
             background-color: #8B4513; /* Brown for carrom board */
-            border: 5px solid #5A2D0C;
-            border-radius: 10px;
+            border: 8px solid #5A2D0C; /* Thicker, darker border */
+            border-radius: 1rem; /* More rounded */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); /* Shadow for the board itself */
+        }
+
+        /* Input styles */
+        input[type="text"], input[type="password"] {
+            padding: 0.75rem;
+            border: 1px solid #ccc;
+            border-radius: 0.5rem;
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 1rem;
+        }
+        .message-box {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 300px;
+            word-wrap: break-word;
         }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen p-4">
 
     <header class="w-full text-center mb-8">
-        <h1 class="text-5xl md:text-6xl font-bold text-gray-800 mb-4">DEBAWAVES Games</h1>
-        <p class="text-xl text-gray-600">Fun for you and your friends!</p>
+        <h1 class="text-5xl md:text-6xl font-bold text-gray-800 mb-4">LUDO & Carrom</h1>
+        <p class="text-xl text-gray-600">DEBAWAVES Games</p>
         <div class="mt-4 text-lg font-semibold">
-            Your Coins: <span id="game-coins" class="text-green-600">1000</span>
+            <span id="current-username" class="text-purple-600">Guest</span>'s Coins: <span id="game-coins" class="text-green-600">1000</span>
         </div>
     </header>
 
     <main class="game-container">
-        <!-- Game Selection Screen -->
-        <div id="game-selection" class="text-center">
-            <h2 class="text-4xl font-bold mb-8">Choose Your Game</h2>
+        <!-- Login/Register Screen -->
+        <div id="auth-screen" class="game-screen active">
+            <h2 class="text-4xl font-bold mb-8">Welcome to DEBAWAVES Games</h2>
             <div class="flex flex-col md:flex-row gap-6">
-                <button id="play-ludo-btn" class="btn-game text-white font-semibold py-4 px-8 rounded-lg shadow-md">
-                    Play Ludo
+                <button id="show-login-btn" class="btn-primary text-white font-semibold py-4 px-8 rounded-lg shadow-md">
+                    Login
                 </button>
-                <button id="play-carrom-btn" class="btn-game text-white font-semibold py-4 px-8 rounded-lg shadow-md">
-                    Play Carrom
+                <button id="show-register-btn" class="btn-primary text-white font-semibold py-4 px-8 rounded-lg shadow-md">
+                    Register
                 </button>
+            </div>
+            <div id="auth-form-container" class="mt-8 w-full max-w-sm">
+                <!-- Login Form -->
+                <form id="login-form" class="hidden flex flex-col items-center">
+                    <h3 class="text-2xl font-semibold mb-4">Login</h3>
+                    <input type="text" id="login-username" placeholder="Username" required>
+                    <input type="password" id="login-password" placeholder="Password" required>
+                    <button type="submit" class="btn-primary text-white font-semibold py-2 px-6 rounded-lg shadow-md">Login</button>
+                    <button type="button" id="back-from-login" class="text-blue-600 hover:underline mt-4">Back</button>
+                </form>
+
+                <!-- Register Form -->
+                <form id="register-form" class="hidden flex flex-col items-center">
+                    <h3 class="text-2xl font-semibold mb-4">Register</h3>
+                    <input type="text" id="register-username" placeholder="Username" required>
+                    <input type="password" id="register-password" placeholder="Password" required>
+                    <button type="submit" class="btn-primary text-white font-semibold py-2 px-6 rounded-lg shadow-md">Register</button>
+                    <button type="button" id="back-from-register" class="text-blue-600 hover:underline mt-4">Back</button>
+                </form>
+                <div id="auth-message" class="message-box hidden"></div>
             </div>
         </div>
 
+        <!-- Game Selection Screen -->
+        <div id="game-selection-screen" class="game-screen">
+            <h2 class="text-4xl font-bold mb-8">Choose Your Game</h2>
+            <div class="flex flex-col md:flex-row gap-6">
+                <button id="play-ludo-btn" class="btn-primary text-white font-semibold py-4 px-8 rounded-lg shadow-md">
+                    Play Ludo
+                </button>
+                <button id="play-carrom-btn" class="btn-primary text-white font-semibold py-4 px-8 rounded-lg shadow-md">
+                    Play Carrom
+                </button>
+            </div>
+            <button id="logout-btn" class="text-red-600 hover:underline mt-8">Logout</button>
+        </div>
+
         <!-- Ludo Game Screen -->
-        <div id="ludo-game" class="hidden w-full flex flex-col items-center">
+        <div id="ludo-game-screen" class="game-screen">
             <h2 class="text-3xl font-bold mb-4">Ludo</h2>
             <canvas id="ludo-board" width="400" height="400" class="mb-4"></canvas>
             <div class="flex gap-4 mb-4">
-                <button id="ludo-roll-dice-btn" class="btn-game text-white font-semibold py-2 px-6 rounded-lg shadow-md">Roll Dice</button>
-                <button id="ludo-reset-btn" class="btn-game text-white font-semibold py-2 px-6 rounded-lg shadow-md">Reset Ludo</button>
+                <button id="ludo-roll-dice-btn" class="btn-primary text-white font-semibold py-2 px-6 rounded-lg shadow-md">Roll Dice</button>
+                <button id="ludo-reset-btn" class="btn-primary text-white font-semibold py-2 px-6 rounded-lg shadow-md">Reset Ludo</button>
             </div>
             <button id="back-to-selection-ludo" class="text-blue-600 hover:underline mt-4">Back to Game Selection</button>
         </div>
 
         <!-- Carrom Game Screen -->
-        <div id="carrom-game" class="hidden w-full flex flex-col items-center">
+        <div id="carrom-game-screen" class="game-screen">
             <h2 class="text-3xl font-bold mb-4">Carrom</h2>
             <canvas id="carrom-board" width="400" height="400" class="mb-4"></canvas>
             <div class="flex gap-4 mb-4">
-                <button id="carrom-strike-btn" class="btn-game text-white font-semibold py-2 px-6 rounded-lg shadow-md">Strike</button>
-                <button id="carrom-reset-btn" class="btn-game text-white font-semibold py-2 px-6 rounded-lg shadow-md">Reset Carrom</button>
+                <button id="carrom-strike-btn" class="btn-primary text-white font-semibold py-2 px-6 rounded-lg shadow-md">Strike</button>
+                <button id="carrom-reset-btn" class="btn-primary text-white font-semibold py-2 px-6 rounded-lg shadow-md">Reset Carrom</button>
             </div>
             <button id="back-to-selection-carrom" class="text-blue-600 hover:underline mt-4">Back to Game Selection</button>
         </div>
@@ -120,46 +198,176 @@
 
     <footer class="w-full text-center mt-8 text-gray-600 text-sm">
         <p>&copy; <span id="current-year"></span> DEBAWAVES. All rights reserved.</p>
-        <p>This is a free-to-play game for trial purposes only. No real money is involved.</p>
+        <p>This is a free-to-play game for trial purposes only. No real money is involved, and user data is not persistent.</p>
     </footer>
 
     <script>
-        // --- Global Game State ---
-        let gameCoins = 1000; // Initial virtual coins
+        // --- Global Game State (Simulated for Demo) ---
+        let gameCoins = 1000;
         const COIN_WIN_AMOUNT = 100;
         const COIN_LOSE_AMOUNT = 50;
+        let currentUser = null; // Stores simulated logged-in user
+
+        // Simulated user database (frontend only, not persistent)
+        const simulatedUsers = {}; // { username: { password: 'xyz', coins: 1000 } }
 
         // --- DOM Elements ---
         const gameCoinsDisplay = document.getElementById('game-coins');
-        const gameSelectionScreen = document.getElementById('game-selection');
-        const ludoGameScreen = document.getElementById('ludo-game');
-        const carromGameScreen = document.getElementById('carrom-game');
+        const currentUsernameDisplay = document.getElementById('current-username');
+
+        const authScreen = document.getElementById('auth-screen');
+        const gameSelectionScreen = document.getElementById('game-selection-screen');
+        const ludoGameScreen = document.getElementById('ludo-game-screen');
+        const carromGameScreen = document.getElementById('carrom-game-screen');
+
+        const showLoginBtn = document.getElementById('show-login-btn');
+        const showRegisterBtn = document.getElementById('show-register-btn');
+        const authFormContainer = document.getElementById('auth-form-container');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const authMessage = document.getElementById('auth-message');
+
+        const loginUsernameInput = document.getElementById('login-username');
+        const loginPasswordInput = document.getElementById('login-password');
+        const registerUsernameInput = document.getElementById('register-username');
+        const registerPasswordInput = document.getElementById('register-password');
+
+        const backFromLoginBtn = document.getElementById('back-from-login');
+        const backFromRegisterBtn = document.getElementById('back-from-register');
+        const logoutBtn = document.getElementById('logout-btn');
 
         const playLudoBtn = document.getElementById('play-ludo-btn');
         const playCarromBtn = document.getElementById('play-carrom-btn');
         const backToSelectionLudoBtn = document.getElementById('back-to-selection-ludo');
         const backToSelectionCarromBtn = document.getElementById('back-to-selection-carrom');
 
-        // --- Update Coin Display ---
+        // --- Utility Functions ---
+        // Moved updateCoinsDisplay to the top for guaranteed availability
         function updateCoinsDisplay() {
             gameCoinsDisplay.textContent = gameCoins;
         }
 
-        // --- Navigation Logic ---
-        function showScreen(screenId) {
-            gameSelectionScreen.classList.add('hidden');
-            ludoGameScreen.classList.add('hidden');
-            carromGameScreen.classList.add('hidden');
-
-            document.getElementById(screenId).classList.remove('hidden');
+        function showScreen(screenElement) {
+            document.querySelectorAll('.game-screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            screenElement.classList.add('active');
         }
 
-        playLudoBtn.addEventListener('click', () => showScreen('ludo-game'));
-        playCarromBtn.addEventListener('click', () => showScreen('carrom-game'));
-        backToSelectionLudoBtn.addEventListener('click', () => showScreen('game-selection'));
-        backToSelectionCarromBtn.addEventListener('click', () => showScreen('game-selection'));
+        function showAuthMessage(message, isError = false) {
+            authMessage.textContent = message;
+            authMessage.classList.remove('hidden');
+            authMessage.style.borderColor = isError ? '#ef4444' : '#22c55e';
+            authMessage.style.color = isError ? '#dc2626' : '#16a34a';
+            authMessage.style.backgroundColor = isError ? '#fee2e2' : '#dcfce7';
+        }
 
-        // --- Ludo Game Logic (Simplified) ---
+        function clearAuthForms() {
+            loginForm.classList.add('hidden');
+            registerForm.classList.add('hidden');
+            authMessage.classList.add('hidden');
+            loginUsernameInput.value = '';
+            loginPasswordInput.value = '';
+            registerUsernameInput.value = '';
+            registerPasswordInput.value = '';
+        }
+
+        function updateUIForLoggedInUser() {
+            if (currentUser) {
+                currentUsernameDisplay.textContent = currentUser.username;
+                gameCoins = currentUser.coins;
+                updateCoinsDisplay();
+                showScreen(gameSelectionScreen);
+            } else {
+                currentUsernameDisplay.textContent = 'Guest';
+                gameCoins = 1000; // Reset coins if no user
+                updateCoinsDisplay();
+                showScreen(authScreen);
+            }
+        }
+
+        // --- Authentication Handlers ---
+        showLoginBtn.addEventListener('click', () => {
+            clearAuthForms();
+            loginForm.classList.remove('hidden');
+        });
+
+        showRegisterBtn.addEventListener('click', () => {
+            clearAuthForms();
+            registerForm.classList.remove('hidden');
+        });
+
+        backFromLoginBtn.addEventListener('click', clearAuthForms);
+        backFromRegisterBtn.addEventListener('click', clearAuthForms);
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = loginUsernameInput.value;
+            const password = loginPasswordInput.value;
+
+            if (simulatedUsers[username] && simulatedUsers[username].password === password) {
+                currentUser = simulatedUsers[username];
+                showAuthMessage(`Login successful! Welcome, ${username}.`, false);
+                setTimeout(updateUIForLoggedInUser, 1000);
+            } else {
+                showAuthMessage('Invalid username or password.', true);
+            }
+        });
+
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = registerUsernameInput.value;
+            const password = registerPasswordInput.value;
+
+            if (simulatedUsers[username]) {
+                showAuthMessage('Username already exists. Please choose another.', true);
+            } else {
+                simulatedUsers[username] = { username, password, coins: 1000 }; // New user starts with 1000 coins
+                currentUser = simulatedUsers[username];
+                showAuthMessage(`Registration successful! Welcome, ${username}.`, false);
+                setTimeout(updateUIForLoggedInUser, 1000);
+            }
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            currentUser = null;
+            updateUIForLoggedInUser();
+            showAuthMessage('Logged out successfully.', false);
+        });
+
+        // --- Game Navigation ---
+        playLudoBtn.addEventListener('click', () => {
+            if (gameCoins < COIN_LOSE_AMOUNT) {
+                alert('Not enough coins to play Ludo! Play Carrom or reset to get more coins.');
+                return;
+            }
+            showScreen(ludoGameScreen);
+            // Deduct coins when starting a new game (if not already deducted by game logic)
+            if (!ludoGameActive) { // Check if game is already active from previous play
+                gameCoins -= COIN_LOSE_AMOUNT;
+                updateCoinsDisplay();
+            }
+            drawLudoBoard(); // Redraw board on screen entry
+        });
+
+        playCarromBtn.addEventListener('click', () => {
+            if (gameCoins < COIN_LOSE_AMOUNT) {
+                alert('Not enough coins to play Carrom! Play Ludo or reset to get more coins.');
+                return;
+            }
+            showScreen(carromGameScreen);
+            // Deduct coins when starting a new game (if not already deducted by game logic)
+            if (!carromGameActive) { // Check if game is already active from previous play
+                gameCoins -= COIN_LOSE_AMOUNT;
+                updateCoinsDisplay();
+            }
+            drawCarromBoard(); // Redraw board on screen entry
+        });
+
+        backToSelectionLudoBtn.addEventListener('click', () => showScreen(gameSelectionScreen));
+        backToSelectionCarromBtn.addEventListener('click', () => showScreen(gameSelectionScreen));
+
+        // --- Ludo Game Logic (Improved Drawing) ---
         const ludoCanvas = document.getElementById('ludo-board');
         const ludoCtx = ludoCanvas.getContext('2d');
         const ludoRollDiceBtn = document.getElementById('ludo-roll-dice-btn');
@@ -167,52 +375,87 @@
 
         let ludoPlayerTurn = 0; // 0 for Player 1 (Red), 1 for Player 2 (Blue)
         let ludoDiceResult = 0;
-        let ludoGameActive = false;
+        let ludoGameActive = false; // Tracks if a game round is in progress
 
         function drawLudoBoard() {
-            // Very simplified Ludo board: just two "homes" and a "path"
             ludoCtx.clearRect(0, 0, ludoCanvas.width, ludoCanvas.height);
-            ludoCtx.font = '16px Arial';
-            ludoCtx.textAlign = 'center';
-            ludoCtx.textBaseline = 'middle';
+            ludoCtx.lineWidth = 2;
 
-            // Player 1 Home (Red)
-            ludoCtx.fillStyle = 'red';
-            ludoCtx.fillRect(20, 20, 80, 80);
-            ludoCtx.fillStyle = 'white';
-            ludoCtx.fillText('P1 Home', 60, 60);
+            // Draw main board outline
+            ludoCtx.strokeStyle = '#333';
+            ludoCtx.strokeRect(0, 0, ludoCanvas.width, ludoCanvas.height);
 
-            // Player 2 Home (Blue)
-            ludoCtx.fillStyle = 'blue';
-            ludoCtx.fillRect(ludoCanvas.width - 100, ludoCanvas.height - 100, 80, 80);
-            ludoCtx.fillStyle = 'white';
-            ludoCtx.fillText('P2 Home', ludoCanvas.width - 60, ludoCanvas.height - 60);
+            const cellSize = ludoCanvas.width / 15; // Ludo board is typically 15x15 cells
+
+            // Draw colored homes and starting areas (simplified)
+            // Red Home
+            ludoCtx.fillStyle = '#FF4136'; // Red
+            ludoCtx.fillRect(0, 0, cellSize * 6, cellSize * 6);
+            ludoCtx.fillStyle = '#FFF';
+            ludoCtx.fillText('Red Home', cellSize * 3, cellSize * 3);
+
+            // Green Home
+            ludoCtx.fillStyle = '#2ECC40'; // Green
+            ludoCtx.fillRect(cellSize * 9, 0, cellSize * 6, cellSize * 6);
+            ludoCtx.fillStyle = '#FFF';
+            ludoCtx.fillText('Green Home', cellSize * 12, cellSize * 3);
+
+            // Yellow Home
+            ludoCtx.fillStyle = '#FFDC00'; // Yellow
+            ludoCtx.fillRect(0, cellSize * 9, cellSize * 6, cellSize * 6);
+            ludoCtx.fillStyle = '#FFF';
+            ludoCtx.fillText('Yellow Home', cellSize * 3, cellSize * 12);
+
+            // Blue Home
+            ludoCtx.fillStyle = '#0074D9'; // Blue
+            ludoCtx.fillRect(cellSize * 9, cellSize * 9, cellSize * 6, cellSize * 6);
+            ludoCtx.fillStyle = '#FFF';
+            ludoCtx.fillText('Blue Home', cellSize * 12, cellSize * 12);
+
+            // Center Home (Star)
+            ludoCtx.fillStyle = '#ccc';
+            ludoCtx.fillRect(cellSize * 6, cellSize * 6, cellSize * 3, cellSize * 3);
+            ludoCtx.fillStyle = '#333';
+            ludoCtx.fillText('CENTER', cellSize * 7.5, cellSize * 7.5);
 
             // Dice Area
-            ludoCtx.fillStyle = '#ccc';
-            ludoCtx.fillRect(ludoCanvas.width / 2 - 30, ludoCanvas.height / 2 - 30, 60, 60);
+            ludoCtx.fillStyle = '#f0f0f0';
+            ludoCtx.fillRect(ludoCanvas.width / 2 - 40, ludoCanvas.height / 2 - 40, 80, 80);
+            ludoCtx.strokeStyle = '#333';
+            ludoCtx.strokeRect(ludoCanvas.width / 2 - 40, ludoCanvas.height / 2 - 40, 80, 80);
             ludoCtx.fillStyle = '#333';
+            ludoCtx.font = '30px Arial';
+            ludoCtx.textAlign = 'center';
+            ludoCtx.textBaseline = 'middle';
             ludoCtx.fillText(ludoDiceResult === 0 ? 'Roll' : ludoDiceResult, ludoCanvas.width / 2, ludoCanvas.height / 2);
 
             // Turn indicator
-            ludoCtx.fillStyle = ludoPlayerTurn === 0 ? 'red' : 'blue';
+            ludoCtx.font = '20px Arial';
+            ludoCtx.fillStyle = ludoPlayerTurn === 0 ? '#FF4136' : '#0074D9';
             ludoCtx.fillText(`Player ${ludoPlayerTurn + 1}'s Turn`, ludoCanvas.width / 2, ludoCanvas.height - 20);
         }
 
         function rollLudoDice() {
             if (!ludoGameActive) {
                 ludoGameActive = true;
-                gameCoins -= COIN_LOSE_AMOUNT; // Deduct coins for starting a game
-                updateCoinsDisplay();
+                // Coins are deducted when entering the game screen, not on first roll
             }
             ludoDiceResult = Math.floor(Math.random() * 6) + 1;
             drawLudoBoard();
-            // Simulate a simple win condition
+            
+            // Simplified win/lose condition for demo
             if (ludoDiceResult === 6) {
                 alert(`Player ${ludoPlayerTurn + 1} rolled a 6! Player ${ludoPlayerTurn + 1} wins!`);
                 gameCoins += COIN_WIN_AMOUNT;
+                currentUser.coins = gameCoins; // Update simulated user coins
                 updateCoinsDisplay();
-                resetLudoGame(); // Reset game after win
+                resetLudoGame();
+            } else if (ludoDiceResult === 1 && Math.random() > 0.7) { // Small chance to lose on 1
+                alert(`Player ${ludoPlayerTurn + 1} rolled a 1 and lost this round!`);
+                gameCoins -= COIN_LOSE_AMOUNT;
+                currentUser.coins = gameCoins; // Update simulated user coins
+                updateCoinsDisplay();
+                resetLudoGame();
             } else {
                 ludoPlayerTurn = 1 - ludoPlayerTurn; // Switch turn
             }
@@ -229,7 +472,7 @@
         ludoResetBtn.addEventListener('click', resetLudoGame);
         drawLudoBoard(); // Initial draw
 
-        // --- Carrom Game Logic (Simplified) ---
+        // --- Carrom Game Logic (Improved Drawing) ---
         const carromCanvas = document.getElementById('carrom-board');
         const carromCtx = carromCanvas.getContext('2d');
         const carromStrikeBtn = document.getElementById('carrom-strike-btn');
@@ -242,9 +485,13 @@
         function drawCarromBoard() {
             carromCtx.clearRect(0, 0, carromCanvas.width, carromCanvas.height);
 
-            // Board outline
-            carromCtx.strokeStyle = '#333';
-            carromCtx.lineWidth = 2;
+            // Board background color (from CSS)
+            // carromCtx.fillStyle = '#8B4513';
+            // carromCtx.fillRect(0, 0, carromCanvas.width, carromCanvas.height);
+
+            // Board outline (from CSS)
+            carromCtx.strokeStyle = '#5A2D0C';
+            carromCtx.lineWidth = 8;
             carromCtx.strokeRect(0, 0, carromCanvas.width, carromCanvas.height);
 
             // Center circle
@@ -253,66 +500,87 @@
             carromCtx.fillStyle = '#D2B48C'; /* Light brown */
             carromCtx.fill();
             carromCtx.strokeStyle = '#333';
+            carromCtx.lineWidth = 2;
             carromCtx.stroke();
 
             // Pockets (simplified as circles at corners)
-            const pocketRadius = 15;
+            const pocketRadius = 20; /* Larger pockets */
             carromCtx.fillStyle = 'black';
             carromCtx.beginPath(); carromCtx.arc(pocketRadius, pocketRadius, pocketRadius, 0, Math.PI * 2); carromCtx.fill();
             carromCtx.beginPath(); carromCtx.arc(carromCanvas.width - pocketRadius, pocketRadius, pocketRadius, 0, Math.PI * 2); carromCtx.fill();
             carromCtx.beginPath(); carromCtx.arc(pocketRadius, carromCanvas.height - pocketRadius, pocketRadius, 0, Math.PI * 2); carromCtx.fill();
             carromCtx.beginPath(); carromCtx.arc(carromCanvas.width - pocketRadius, carromCanvas.height - pocketRadius, pocketRadius, 0, Math.PI * 2); carromCtx.fill();
 
+            // Striking lines (simplified)
+            carromCtx.strokeStyle = '#333';
+            carromCtx.lineWidth = 2;
+            carromCtx.beginPath(); carromCtx.moveTo(carromCanvas.width / 2, 50); carromCtx.lineTo(carromCanvas.width / 2, carromCanvas.height - 50); carromCtx.stroke();
+            carromCtx.beginPath(); carromCtx.moveTo(50, carromCanvas.height / 2); carromCtx.lineTo(carromCanvas.width - 50, carromCanvas.height / 2); carromCtx.stroke();
+
+
             // Coins (simplified: just a few dots)
-            const coinRadius = 5;
+            const coinRadius = 8; /* Larger coins */
+            // White coins
             carromCtx.fillStyle = 'white';
-            carromCtx.beginPath(); carromCtx.arc(carromCanvas.width / 2 - 20, carromCanvas.height / 2, coinRadius, 0, Math.PI * 2); carromCtx.fill();
-            carromCtx.beginPath(); carromCtx.arc(carromCanvas.width / 2 + 20, carromCanvas.height / 2, coinRadius, 0, Math.PI * 2); carromCtx.fill();
-            carromCtx.beginPath(); carromCtx.arc(carromCanvas.width / 2, carromCanvas.height / 2 - 20, coinRadius, 0, Math.PI * 2); carromCtx.fill();
-            carromCtx.beginPath(); carromCtx.arc(carromCanvas.width / 2, carromCanvas.height / 2 + 20, coinRadius, 0, Math.PI * 2); carromCtx.fill();
+            carromCtx.beginPath(); carromCtx.arc(carromCanvas.width / 2 - 25, carromCanvas.height / 2, coinRadius, 0, Math.PI * 2); carromCtx.fill();
+            carromCtx.beginPath(); carromCtx.arc(carromCanvas.width / 2 + 25, carromCanvas.height / 2, coinRadius, 0, Math.PI * 2); carromCtx.fill();
+            // Black coins
+            carromCtx.fillStyle = 'black';
+            carromCtx.beginPath(); carromCtx.arc(carromCanvas.width / 2, carromCanvas.height / 2 - 25, coinRadius, 0, Math.PI * 2); carromCtx.fill();
+            carromCtx.beginPath(); carromCtx.arc(carromCanvas.width / 2, carromCanvas.height / 2 + 25, coinRadius, 0, Math.PI * 2); carromCtx.fill();
+            // Queen (Red)
+            carromCtx.fillStyle = 'red';
+            carromCtx.beginPath(); carromCtx.arc(carromCanvas.width / 2, carromCanvas.height / 2, coinRadius + 2, 0, Math.PI * 2); carromCtx.fill();
+
 
             // Score display
-            carromCtx.fillStyle = '#333';
-            carromCtx.font = '16px Arial';
+            carromCtx.fillStyle = '#fff'; /* White text on brown board */
+            carromCtx.font = '20px Arial';
+            carromCtx.textAlign = 'center';
+            carromCtx.textBaseline = 'middle';
             carromCtx.fillText(`P1: ${carromCoinsPocketed.p1} coins`, carromCanvas.width / 4, carromCanvas.height - 20);
             carromCtx.fillText(`P2: ${carromCoinsPocketed.p2} coins`, carromCanvas.width * 3 / 4, carromCanvas.height - 20);
 
             // Turn indicator
-            carromCtx.fillStyle = carromPlayerTurn === 0 ? 'red' : 'blue';
+            carromCtx.fillStyle = carromPlayerTurn === 0 ? 'white' : 'black'; /* White/Black for players */
             carromCtx.fillText(`Player ${carromPlayerTurn + 1}'s Turn`, carromCanvas.width / 2, 20);
         }
 
         function carromStrike() {
             if (!carromGameActive) {
                 carromGameActive = true;
-                gameCoins -= COIN_LOSE_AMOUNT; // Deduct coins for starting a game
-                updateCoinsDisplay();
+                // Coins are deducted when entering the game screen, not on first strike
             }
 
-            // Simulate pocketing a coin randomly
-            const didPocket = Math.random() > 0.5; // 50% chance to pocket
-            if (didPocket) {
+            // Simulate pocketing coins: 1-3 coins per strike
+            const coinsThisTurn = Math.floor(Math.random() * 3) + 1; 
+            let message = `Player ${carromPlayerTurn + 1} struck! `;
+
+            if (coinsThisTurn > 0) {
                 if (carromPlayerTurn === 0) {
-                    carromCoinsPocketed.p1++;
+                    carromCoinsPocketed.p1 += coinsThisTurn;
                 } else {
-                    carromCoinsPocketed.p2++;
+                    carromCoinsPocketed.p2 += coinsThisTurn;
                 }
-                alert(`Player ${carromPlayerTurn + 1} pocketed a coin!`);
+                message += `Pocketed ${coinsThisTurn} coin(s)!`;
             } else {
-                alert(`Player ${carromPlayerTurn + 1} missed.`);
+                message += `Missed.`;
             }
 
+            alert(message);
             drawCarromBoard();
 
-            // Simple win condition: first to 3 coins wins
-            if (carromCoinsPocketed.p1 >= 3) {
+            // Simple win condition: first to 5 coins wins
+            if (carromCoinsPocketed.p1 >= 5) {
                 alert('Player 1 wins the Carrom game!');
                 gameCoins += COIN_WIN_AMOUNT;
+                currentUser.coins = gameCoins; // Update simulated user coins
                 updateCoinsDisplay();
                 resetCarromGame();
-            } else if (carromCoinsPocketed.p2 >= 3) {
+            } else if (carromCoinsPocketed.p2 >= 5) {
                 alert('Player 2 wins the Carrom game!');
                 gameCoins += COIN_WIN_AMOUNT;
+                currentUser.coins = gameCoins; // Update simulated user coins
                 updateCoinsDisplay();
                 resetCarromGame();
             } else {
@@ -333,8 +601,7 @@
 
         // --- Initial Setup ---
         window.onload = function() {
-            updateCoinsDisplay();
-            showScreen('game-selection'); // Start on selection screen
+            updateUIForLoggedInUser(); // Show auth screen or game selection based on current user
             document.getElementById('current-year').textContent = new Date().getFullYear();
         };
     </script>
